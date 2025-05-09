@@ -1,90 +1,135 @@
-# Local Deployment Tool for Kaia
+# Local Deployment Guide
 
-<!-- vim-markdown-toc GFM -->
-
-* [Deploying the local Network](#deploying-the-local-network)
-	* [Prerequisites](#prerequisites)
-	* [Starting the Kaia Network](#starting-the-kaia-network)
-		* [Chainging parameters](#chainging-parameters)
-	* [Checking out the Status of the Network](#checking-out-the-status-of-the-network)
-	* [Getting logs](#getting-logs)
-	* [Stopping the Network](#stopping-the-network)
-	* [Resuming the Network](#resuming-the-network)
-	* [Terminate the Network](#terminate-the-network)
-
-<!-- vim-markdown-toc -->
-
-# Deploying the local Network
+This guide explains how to deploy a local Kaia network.
 
 ## Prerequisites
-Following packages are required.
 
-1. [Docker](https://docs.docker.com/get-docker/)
-1. [Docker-compose](https://docs.docker.com/compose/install/)
+- Docker and Docker Compose installed
+- Git installed
 
+## Get Started
+
+1. Download the kaia repository at the designated paths:
+   ```bash
+   # Create a directory for kaia
+   mkdir -p ~/workdir
+   cd ~/workdir
+   
+   # Clone the kaia repository
+   git clone https://github.com/kaiachain/kaia.git
+   cd kaia
+
+   # Build the binaries
+   make
+   ```
+
+2. Navigate to the local-deploy directory:
+   ```bash
+   cd local-deploy
+   ```
+
+3. Configure properties.sh
+
+   Copy the properties.sh file from copy_properties.sh
+   ```bash
+   cp sample_properties.sh properties.sh
+   ```
+   Setup Directories In Properties.sh - It's mandatory field to set.
+   ```
+   KAIACODE=$HOME/workdir/kaia
+   HOMEDIR=$HOME/workdir/kaiaspray/local-deploy
+   ```
+   Setup Network_Id, Number of Nodes, and Number of TestAccounts
+   ```
+   NETWORK_ID=949494 # put random NETWORK_ID
+   NUMOFCN=1
+   NUMOFPN=1
+   NUMOFEN=1
+   NUMOFTESTACCSPERNODE=1
+   ```
+   Remix option - Default value is true.
+   ```
+   REMIX=true # if this is true, set the cors field of the EN to use remix. If EN not available, CN will be used for remix.
+   ```
+
+   Homi options
+   ```
+   # nodekey directory options - Default value is false. 
+   # - It means the homi will generate new keys. 
+   # - If you're already using existing nodekeys, 
+   #   locate the nodekeys under nodekey
+   HOMI_CNKEYS=false
+   HOMI_PNKEYS=false
+   HOMI_ENKEYS=false
+   ```
+
+4. Setup and Interact with Kaia nodes
+   
+   Next scripts are used to setup and interact with kaia nodes
+   - `0_kaia_setup.sh`: Generate homi-output and setup kaia node directories
+   - `1_copy_binary.sh`: Copy the built binaries from Kaia source code
+   - `2_initialize_nodes.sh`: Delete and initialize the kaia nodes
+   - `3_ccstart.sh`: Start the kaia nodes
+   - `4_ccstop.sh`: Stop the kaia nodes
+   - `5_attach.sh`: Attach the kaia node
+   - `6_logs.sh`: Tail the log file of the kaia node
+
+   Run next scripts
+   ```bash
+   ./0_kaia_setup.sh
+   ./1_copy_binary.sh
+   ./2_initialize_nodes.sh
+   ./3_ccstart.sh
+   ```
+
+   Try attach the en node
+   ```bash
+   ./5_attach.sh en 1
+   ```
+
+   Try tail the log of the cn node
+   ```bash
+   ./6_logs.sh cn 1
+   ```
+
+5. Interact with Monitoring tools
+
+   The deployment includes monitoring tools:
+   - Prometheus: Available at http://localhost:9090
+   - Grafana: Available at http://localhost:3000 (default credentials: admin/admin)
+
+   To start the monitoring tool, run the next script.
+   ```shell
+   ./7_monitoring.sh start
+   ```
+
+   To stop the monitoring tool, run the next script.
+   ```shell
+   ./7_monitoring.sh stop
+   ```
+
+## Usages
 ```bash
-Note: 
-If the Operation System is Windows, please run the below commands from gitbash.
+./0_kaia_setup.sh
+./1_copy_binary.sh # copy the binaries to all nodes
+./1_copy_binary.sh cn 1 # copy the binary to the first cn node
+./1_copy_binary.sh en 3 # copy the binary to the third en node
+./2_initialize_nodes.sh # delete and initialize the all nodes
+./2_initialize_nodes.sh cn 1 # delete and initialize the first cn
+./2_initialize_nodes.sh en 3 # delete and initialize the third en
+./3_ccstart.sh # start all nodes
+./3_ccstart.sh cn 1 # start the first cn
+./3_ccstart.sh en 3 # start the third en
+./4_ccstop.sh # stop all nodes
+./4_ccstop.sh cn 1 # stop the first cn
+./4_ccstop.sh en 3 # stop the third en 
+./5_ccattach.sh cn 1 # attach the first cn
+./5_ccattach.sh en 3 # attach the third en
+./6_logs.sh cn 1 # tail the log of the first cn
+./6_logs.sh en 3 # tail the log of the third en
+./7_monitoring.sh start
+./7_monitoring.sh stop
 ```
 
-## Starting the Kaia Network
-Execute the following scripts:
-
-```bash
-$ cd local-deploy
-$ ./1.prepare.sh
-$ ./2.start.sh
-```
-
-It deploys 1 KCN network by default. 
-
-
-### Changing parameters
-You can change parameters in `0.variables.sh`.
-
-| Parameter | Description |
-|---|---|
-|CHAIN_ID| The chain ID of the deployed chain. (Default:203) |
-|NETWORK_ID| The network ID of the deployed chain. It would be better to set this value to the same value of CHAIN_ID for simplicity. (Default:203) |
-|NUM_CNS| Number of CNs of the network. (Default:1) |
-|DOCKER_IMAGE| The Docker image to use for the Kaia node. (Default:kaiachain/kaia:latest) |
-|PRIVATE_KEY| The private key of the genesis account having all KAIA. If not set, it is auto-generated. |
-|ADDRESS| The address of the genesis account. This address must be matched to PRIVATE_KEY. |
-
-## Checking out the Status of the Network
-To check out the local Kaia network is working well, first check the status of the docker containers. To do that, execute the following command:
-
-```bash
-$ ./3.status.sh
-```
-
-## Getting logs
-After executing `2.start.sh`, it prints logs for the kaia network.
-If you want to print out the logs in another shell, execute the following command:
-
-```bash
-$ ./4.logs.sh
-```
-
-## Stopping the Network
-To stop the network to reduce resource utilization of your machine, execute the following command:
-
-```bash
-$ ./5.stop.sh
-```
-
-## Resuming the Network
-To resume the stopped network, execute the following command:
-
-```bash
-$ ./6.resume.sh
-```
-
-## Terminate the Network
-To terminate all the resources in your machine, execute the following command:
-
-```bash
-$ ./7.terminate.sh
-```
-
-**Note** All the transactions and blocks you made will be lost.
+## TroubleShooting
+TBD
