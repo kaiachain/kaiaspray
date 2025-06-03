@@ -4,8 +4,8 @@
 # Enhanced node analysis tool for collecting logs, RPC metrics, and system metrics
 
 # Default values
-DAYS=7
-LOG_DIR="/var/log/kaia"
+LINES=10000
+LOG_PATH="/var/log/kend/kend.out"
 OUTPUT_DIR="./output"
 BIN_PATH="/usr/bin/ken"
 BLOCK_HEIGHT=100
@@ -24,8 +24,8 @@ NC='\033[0m' # No Color
 usage() {
     echo "Usage: $0 [options]"
     echo "Options:"
-    echo "  --days N               Number of days to analyze (default: 3)"
-    echo "  --log-dir DIR          Log directory (default: /var/log/kaia)"
+    echo "  --tail-lines           Number of lines to analyze (default: 10000)"
+    echo "  --log-path PATH        Log file path (default: /var/log/kend/kend.out)"
     echo "  --output-dir DIR       Output directory (default: ./output)"
     echo "  --rpc-endpoint PATH    RPC endpoint (default: /var/run/kaia/kaia.ipc)"
     echo "  --interval N           Metrics collection interval in seconds (default: 5)"
@@ -85,51 +85,14 @@ make_ipc_call() {
 # Enhanced log collection with pattern matching
 collect_logs() {
     local output_dir="$OUTPUT_DIR/logs"
-    
-    echo -e "${GREEN}Collecting logs from the past $DAYS days...${NC}"
-    
-    # Create logs directory
     mkdir -p "$output_dir"
-    
-    # Find and copy log files
-    for node_type in "cn" "pn" "en"; do
-        local LOG_FILE="$LOG_DIR/k${node_type}d.out"
 
-        if [ -f "$LOG_FILE" ]; then
-            TODAY_SHORT=$(tail -n 10 $LOG_FILE | grep -oE '[0-9]{2}/[0-9]{2}' | tail -n 1)
-            if [ -z "$TODAY_SHORT" ]; then
-                echo "Could not extract date from log."
-                exit 1
-            fi
+    echo -e "${GREEN}Collecting the last ${TAIL_LINES} lines from logs...${NC}"
 
-            TIMESTAMP=$(date -j -f "%Y/%m/%d" "$(date +%Y)/$TODAY_SHORT" "+%s")
-            CUTOFF=$(date -j -r $((TIMESTAMP - DAYS * 86400)) +%m/%d)
+    tail -n "$TAIL_LINES" "$LOG_PATH" > "$output_dir/latest.log"
 
-            echo "DAYS: $DAYS"
-            echo "TODAY: $TODAY_SHORT"
-            echo "CUTOFF: $CUTOFF"
-            
-            awk -v cutoff="$CUTOFF" '
-            function date_ge(a, b) {
-                split(a, aa, "/")
-                split(b, bb, "/")
-                return (aa[1] aa[2]) >= (bb[1] bb[2])
-            }
-            {
-                if (match($0, /\[[0-9]{2}\/[0-9]{2},/)) {
-                    log_date = substr($0, RSTART + 1, 5)
-                    if (date_ge(log_date, cutoff)) {
-                        print
-                    }
-                }
-            }
-            ' "$LOG_FILE" > "$OUTPUT_DIR/logs/k${node_type}d.out"
-            
-            echo -e "${GREEN}Copied k${node_type}d.out to $output_dir${NC}"
-        fi
-    done
+    echo -e "${GREEN}Tail-based logs saved to $output_dir${NC}"
 
-    echo -e "${GREEN}Log collection completed. Logs saved to $output_dir${NC}"
 }
 
 # Enhanced RPC metrics collection
@@ -293,15 +256,34 @@ collect_system_metrics() {
 
         echo "=== System Information ==="
         echo "** Memory Size:"
-        sysctl -n hw.memsize | awk '{printf "  %.2f GB\n", $1 / 1024 / 1024 / 1024}'
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            # macOS
+            sysctl -n hw.memsize | awk '{printf "  %.2f GB\n", $1 / 1024 / 1024 / 1024}'
+        else
+            # Linux
+            awk '/MemTotal/ {printf "%.2f", $2/1024/1024}' /proc/meminfo
+        fi
 
         echo "** CPU Cores:"
-        echo "  Logical Cores: $(sysctl -n hw.logicalcpu)"
-        echo "  Physical Cores: $(sysctl -n hw.physicalcpu)"
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            # macOS
+            echo "  Logical Cores: $(sysctl -n hw.logicalcpu)"
+            echo "  Physical Cores: $(sysctl -n hw.physicalcpu)"
+        else
+            # Linux
+            echo " Logical Cores: $(nproc)"
+            echo " Physical Cores: $(lscpu | awk '/^Core\(s\) per socket:/ {print $4}')"
+        fi
         echo ""
 
         echo "=== Top Result ==="
-        top -l 1 -s 0 -o rsize | head -n 20
+        if [[ $"OSTYPE" == "darwin"* ]]; then
+            # macOS
+            top -l 1 -s 0 -o rsize | head -n 20
+        else
+            # Linux
+            top -b -n 1 | head -n 20
+        fi
         echo ""
 
         echo "=== Disk Usage ==="
@@ -309,7 +291,7 @@ collect_system_metrics() {
         echo ""
 
         echo "=== Process Information ==="
-        ps aux | grep -i kaia | grep -v grep
+        ps aux | grep -i $BIN_PATH | grep -v grep
         echo ""
 
         echo "=== Killed System Logs ==="
@@ -358,12 +340,12 @@ create_archive() {
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --days)
-            DAYS="$2"
+        --tail-lines)
+            TAIL_LINES="$2"
             shift 2
             ;;
-        --log-dir)
-            LOG_DIR="$2"
+        --log-path)
+            LOG_PATH="$2"
             shift 2
             ;;
         --output-dir)

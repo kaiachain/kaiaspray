@@ -1,4 +1,4 @@
-# Kaia Analysis Tool
+# Kaia Analytics Tool
 
 A command-line tool for collecting and analyzing node operation data.
 
@@ -44,14 +44,17 @@ brew install curl jq
 
 # Ubuntu/Debian
 sudo apt-get update
-sudo apt-get install curl jq zip
+sudo apt-get install curl jq zip nc
+
+# yum
+sudo yum install curl jq zip nc
 ```
 
 ### Installation
 
 1. Download the script:
 ```bash
-curl -O https://raw.githubusercontent.com/kaiachain/kaiaspray/main/analyze.sh
+curl -O https://raw.githubusercontent.com/kaiachain/kaiaspray/main/analytics-tool/analyze.sh
 ```
 
 2. Make it executable:
@@ -62,7 +65,7 @@ chmod +x analyze.sh
 ### Basic Usage
 Set next paths to yours
 ```bash
-LOG_DIR="/var/kcnd/data/logs"
+LOG_PATH="/var/kcnd/data/logs/kcnd.out"
 BIN_PATH="/usr/bin/kcn"
 IPC_URL="/var/kcnd/data/klay.ipc"
 RPC_URL="http://localhost:8551"
@@ -72,7 +75,7 @@ RPC_URL="http://localhost:8551"
 ```bash
 # NOTE: monitor should be enabled
 
-./analyze.sh --days 5 --log-dir $LOG_DIR --monitor-port 61006
+./analyze.sh --tail-lines 10000 --log-path $LOG_PATH --monitor-port 61001
 ```
 
 2. Collect only gov-data (collect via rpc):
