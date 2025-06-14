@@ -600,7 +600,7 @@
       ],
       "thresholds": [],
       "timeRegions": [],
-      "title": "Requets Event Rate",
+      "title": "Request Event Rate",
       "tooltip": {
         "shared": true,
         "sort": 0,
