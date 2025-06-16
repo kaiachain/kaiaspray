@@ -132,4 +132,24 @@ This guide explains how to deploy a local Kaia network.
 ```
 
 ## TroubleShooting
-TBD
+
+### How to check nodeAddress and kni
+
+```
+$ egrep -R -o "nodeAddress=0x[0-9a-fA-F]+" cn*/data/logs | sort
+cn1/data/logs/kcnd.out:nodeAddress=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+cn2/data/logs/kcnd.out:nodeAddress=0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+cn3/data/logs/kcnd.out:nodeAddress=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC
+cn4/data/logs/kcnd.out:nodeAddress=0x90F79bf6EB2c4f870365E785982E1f101E93b906
+```
+
+```
+$ cat cn1/data/static-nodes.json
+[
+    "kni://8318535b54105d4a7aae60c08fc45f9687181b4fdfc625bd1a753fa7397fed753547f11ca8696646f2f3acb08e31016afac23e630c5d11f59f61fef57b0d2aa5@0.0.0.0:32323?discport=0\u0026ntype=cn",
+    "kni://ba5734d8f7091719471e7f7ed6b9df170dc70cc661ca05e688601ad984f068b0d67351e5f06073092499336ab0839ef8a521afd334e53807205fa2f08eec74f4@0.0.0.0:32325?discport=0\u0026ntype=cn",
+    "kni://9d9031e97dd78ff8c15aa86939de9b1e791066a0224e331bc962a2099a7b1f0464b8bbafe1535f2301c72c2cb3535b172da30b02686ab0393d348614f157fbdb@0.0.0.0:32327?discport=0\u0026ntype=cn",
+    "kni://20b871f3ced029e14472ec4ebc3c0448164942b123aa6af91a3386c1c403e0ebd3b4a5752a2b6c49e574619e6aa0549eb9ccd036b9bbc507e1f7f9712a236092@0.0.0.0:32329?discport=0\u0026ntype=cn"
+]
+```
+

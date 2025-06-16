@@ -183,10 +183,13 @@ deploy()
     REGISTRY_MOCK="--registry-mock "
   fi
 
-  ./homi setup --gen-type=local --cypress-test $PATCHADDRESSBOOK $REGISTRY_MOCK --cn-num $NUMOFCN --pn-num $NUMOFPN --en-num $NUMOFEN --chainID $NETWORK_ID --test-num $((NUMOFTESTACCSPERNODE*(NUMOFCN+NUMOFPN+NUMOFEN)))
+  ./homi setup --gen-type=local --cypress-test $PATCHADDRESSBOOK $REGISTRY_MOCK \
+      --cn-num $NUMOFCN --pn-num $NUMOFPN --en-num $NUMOFEN --chainID $NETWORK_ID \
+      --test-num $((NUMOFTESTACCSPERNODE*(NUMOFCN+NUMOFPN+NUMOFEN))) --mnemonic test,junk
 
   if [[ $HOMI_NUMOF_INITIAL_CN_NUM != 0 ]]; then
-    ./homi setup --gen-type=local --baobab-test $NODEKEYSDIR $PATCHADDRESSBOOK $REGISTRY_MOCK --cn-num $HOMI_NUMOF_INITIAL_CN_NUM --chainID $NETWORK_ID --output homi-output-tmp
+    ./homi setup --gen-type=local --baobab-test $NODEKEYSDIR $PATCHADDRESSBOOK $REGISTRY_MOCK \
+        --cn-num $HOMI_NUMOF_INITIAL_CN_NUM --chainID $NETWORK_ID --output homi-output-tmp
     mv homi-output-tmp/scripts/genesis.json homi-output/scripts/genesis.json
     mv homi-output-tmp/keys/*1 homi-output/keys/
 
