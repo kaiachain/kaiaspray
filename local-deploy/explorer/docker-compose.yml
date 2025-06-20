@@ -1,0 +1,91 @@
+version: '3.9'
+
+services:
+  redis-db:
+    extends:
+      file: ./services/redis.yml
+      service: redis-db
+
+  db:
+    extends:
+      file: ./services/db.yml
+      service: db
+
+  backend:
+    depends_on:
+      - db
+      - redis-db
+    extends:
+      file: ./services/backend.yml
+      service: backend
+    links:
+      - db:database
+    environment:
+        ETHEREUM_JSONRPC_VARIANT: 'geth'
+        ETHEREUM_JSONRPC_HTTP_URL: ${RPC_URL:-http://host.docker.internal:8551/}
+        ETHEREUM_JSONRPC_TRACE_URL: ${RPC_URL:-http://host.docker.internal:8551/}
+        ETHEREUM_JSONRPC_WS_URL: ${WS_URL:-ws://host.docker.internal:8552/}
+        CHAIN_ID: ${CHAIN_ID:-31337}
+        INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: 'true'
+        INDEXER_DISABLE_EMPTY_BLOCKS_SANITIZER: 'true'
+        INDEXER_INTERNAL_TRANSACTIONS_TRACER_TYPE: 'opcode'
+        INDEXER_CATCHUP_BLOCK_INTERVAL: '1s'
+        LOG_LEVEL: 'warn'
+    volumes:
+      - ./config/runtime:/app/config/runtime
+
+  visualizer:
+    extends:
+      file: ./services/visualizer.yml
+      service: visualizer
+
+  sig-provider:
+    extends:
+      file: ./services/sig-provider.yml
+      service: sig-provider
+
+  frontend:
+    depends_on:
+      - backend
+    extends:
+      file: ./services/frontend.yml
+      service: frontend
+    environment:
+      NEXT_PUBLIC_NETWORK_ID: ${CHAIN_ID:-31337}
+      NEXT_PUBLIC_NETWORK_RPC_URL: http://host.docker.internal:8545/
+      NEXT_PUBLIC_API_HOST: ${HOST_DOMAIN:-localhost}
+      NEXT_PUBLIC_APP_HOST: ${HOST_DOMAIN:-localhost}
+      NEXT_PUBLIC_STATS_API_HOST: http://${HOST_DOMAIN:-localhost}:8080
+      NEXT_PUBLIC_VISUALIZE_API_HOST: http://${HOST_DOMAIN:-localhost}:8081
+
+  stats-db:
+    extends:
+      file: ./services/stats.yml
+      service: stats-db
+
+  stats:
+    depends_on:
+      - stats-db
+      - backend
+    extends:
+      file: ./services/stats.yml
+      service: stats
+
+  user-ops-indexer:
+    depends_on:
+      - db
+      - backend
+    extends:
+      file: ./services/user-ops-indexer.yml
+      service: user-ops-indexer
+    environment:
+      USER_OPS_INDEXER__INDEXER__RPC_URL: ${RPC_URL:-ws://host.docker.internal:8545/}
+
+  proxy:
+    depends_on:
+      - backend
+      - frontend
+      - stats
+    extends:
+      file: ./services/nginx.yml
+      service: proxy
