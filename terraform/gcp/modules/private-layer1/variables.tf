@@ -90,3 +90,15 @@ variable "network_tier" {
   description = "Network tier for external IP addresses (PREMIUM or STANDARD)"
   default     = "PREMIUM"
 }
+
+variable "ssh_private_key_path" {
+  type        = string
+  description = "Path to SSH private key for connecting to instances"
+  default     = "~/.ssh/id_rsa"
+}
+
+variable "user_name" {
+  type        = string
+  description = "User name for SSH login to instances"
+  default     = "core"
+}

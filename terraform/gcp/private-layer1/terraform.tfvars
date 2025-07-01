@@ -30,10 +30,20 @@ pn_options = {
 }
 
 en_options = {
-  count          = 1
+  count = 2
   machine_type   = "n2-standard-2"
   boot_disk_size = 30
   # compute_disk_size = 100
+  # options = {
+  #   0:{
+  #     compute_disk_size = 1000
+  #     snapshot_id = "chaindata-full-kairos-20241231"
+  #   }
+  #   1:{
+  #     compute_disk_size = 1000
+  #     snapshot_id = "chaindata-full-kairos-20241231"
+  #   }
+  # }
 }
 
 monitor_options = {

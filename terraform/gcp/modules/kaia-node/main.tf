@@ -4,6 +4,7 @@ resource "google_compute_instance" "this" {
   zone         = var.zone
 
   boot_disk {
+    auto_delete = true
     initialize_params {
       image = lookup(var.boot_disk, "image_id", data.google_compute_image.this.family)
       size  = lookup(var.boot_disk, "boot_disk_size", 20)
@@ -14,7 +15,8 @@ resource "google_compute_instance" "this" {
     for_each = var.compute_disk != null ? [1] : []
 
     content {
-      source = google_compute_disk.this[0].self_link
+      source      = google_compute_disk.this[0].self_link
+      device_name = lookup(var.compute_disk, "name", "data-disk")
     }
   }
 
@@ -40,10 +42,11 @@ resource "google_compute_instance" "this" {
 resource "google_compute_disk" "this" {
   count = var.compute_disk != null ? 1 : 0
 
-  name = lookup(var.compute_disk, "name", null)
-  type = lookup(var.compute_disk, "type", null)
-  zone = lookup(var.compute_disk, "zone", null)
-  size = lookup(var.compute_disk, "size", null)
+  name     = lookup(var.compute_disk, "name", null)
+  type     = lookup(var.compute_disk, "type", null)
+  zone     = lookup(var.compute_disk, "zone", null)
+  size     = lookup(var.compute_disk, "size", null)
+  snapshot = lookup(var.compute_disk, "snapshot", null)
 }
 
 resource "google_compute_address" "this" {
