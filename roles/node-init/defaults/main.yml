@@ -1,7 +1,7 @@
 kaia_node_type:
 kaia_conf_default:
-  NETWORK:
-  NETWORK_ID: "{{ kaia_network_id }}"
+  NETWORK: "{{ kaia_network | default('') }}"
+  NETWORK_ID: "{{ '' if kaia_network is defined else kaia_network_id }}"
   PORT: "{{ kaia_port }}"
   SERVER_TYPE: fasthttp
   SYNCMODE: full
@@ -29,7 +29,7 @@ kaia_conf_default:
   DB_NO_PARALLEL_WRITE: 0
   MULTICHANNEL: 1
   SUBPORT: $((PORT + 1))
-  NO_DISCOVER: 1
+  NO_DISCOVER: "{{ 0 if kaia_network is defined else 1 }}"
   BOOTNODES:
   AUTO_RESTART_NODE: 1
   AUTO_RESTART_INTERVAL: 0.1

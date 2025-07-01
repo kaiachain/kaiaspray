@@ -53,7 +53,12 @@ class ModuleRunner(object):
     def default_topology(self):
         topology = {}
 
-        pn_per_cn = self.num_pn / self.num_cn
+        # Handle case where num_cn is 0
+        if self.num_cn == 0:
+            pn_per_cn = 0
+        else:
+            pn_per_cn = self.num_pn / self.num_cn
+        
         pn_per_en = 2
 
         # full mesh for CNs
@@ -66,10 +71,12 @@ class ModuleRunner(object):
         # pn_per_cn
         for i in range(self.num_pn):
             pn_name = node_name('pn', i)
-            cn_index = int(i / pn_per_cn)
-
-            topology[pn_name] = []
-            topology[pn_name].append(node_name('cn', cn_index))
+            if self.num_cn > 0:
+                cn_index = int(i / pn_per_cn)
+                topology[pn_name] = []
+                topology[pn_name].append(node_name('cn', cn_index))
+            else:
+                topology[pn_name] = []
 
         # pn_per_pn
         for i in range(self.num_pn):
@@ -87,10 +94,11 @@ class ModuleRunner(object):
             en_name = node_name('en', i)
 
             topology[en_name] = []
-            pn_index = i
-            for _ in range(pn_per_en):
-                pn_index = (pn_index + int(self.num_pn / pn_per_en)) % self.num_pn
-                topology[en_name].append(node_name('pn', pn_index))
+            if self.num_pn > 0 and pn_per_en > 0:
+                pn_index = i
+                for _ in range(pn_per_en):
+                    pn_index = (pn_index + int(self.num_pn / pn_per_en)) % self.num_pn
+                    topology[en_name].append(node_name('pn', pn_index))
 
         return topology
 
