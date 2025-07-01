@@ -1,8 +1,8 @@
 kaia_node_type:
 kaia_conf_default:
-  NETWORK: "{{ kaia_network | default('') }}"
-  NETWORK_ID: "{{ '' if kaia_network is defined else kaia_network_id }}"
-  PORT: "{{ kaia_port }}"
+  NETWORK: "{{ kaia_conf_override.NETWORK | default(deploy_options.kaia_network | default('')) }}"
+  NETWORK_ID: "{{ kaia_conf_override.NETWORK_ID | default('' if (kaia_conf_override.NETWORK is defined or deploy_options.kaia_network is defined) else deploy_options.kaia_network_id | default('')) }}"
+  PORT: "{{ kaia_conf_override.PORT | default(kaia_port) }}"
   SERVER_TYPE: fasthttp
   SYNCMODE: full
   VERBOSITY: 3
@@ -12,16 +12,16 @@ kaia_conf_default:
   TXPOOL_EXEC_SLOTS_ACCOUNT: 16384
   TXPOOL_NONEXEC_SLOTS_ACCOUNT: 16384
   TXPOOL_LIFE_TIME: 5m
-  RPC_ENABLE: 0
-  RPC_API: kaia
-  RPC_PORT: 8551
-  RPC_ADDR: 0.0.0.0
+  RPC_ENABLE: "{{ kaia_conf_override.RPC_ENABLE | default(deploy_options.rpc_enable | default(1)) }}"
+  RPC_API: "{{ kaia_conf_override.RPC_API | default(deploy_options.rpc_api | default('kaia')) }}"
+  RPC_PORT: "{{ kaia_conf_override.RPC_PORT | default(deploy_options.rpc_port | default(8551)) }}"
+  RPC_ADDR: "{{ kaia_conf_override.RPC_ADDR | default(deploy_options.rpc_addr | default('0.0.0.0')) }}"
   RPC_CORSDOMAIN: "*"
   RPC_VHOSTS: "*"
-  WS_ENABLE: 0
-  WS_API: kaia
-  WS_ADDR: 0.0.0.0
-  WS_PORT: 8552
+  WS_ENABLE: "{{ kaia_conf_override.WS_ENABLE | default(deploy_options.ws_enable | default(1)) }}"
+  WS_API: "{{ kaia_conf_override.WS_API | default(deploy_options.ws_api | default('kaia')) }}"
+  WS_ADDR: "{{ kaia_conf_override.WS_ADDR | default(deploy_options.ws_addr | default('0.0.0.0')) }}"
+  WS_PORT: "{{ kaia_conf_override.WS_PORT | default(deploy_options.ws_port | default(8552)) }}"
   WS_ORIGINS: "*"
   AUTO_RESTART: 1
   METRICS: 1
@@ -29,7 +29,7 @@ kaia_conf_default:
   DB_NO_PARALLEL_WRITE: 0
   MULTICHANNEL: 1
   SUBPORT: $((PORT + 1))
-  NO_DISCOVER: "{{ 0 if kaia_network is defined else 1 }}"
+  NO_DISCOVER: "{{ kaia_conf_override.NO_DISCOVER | default(0 if deploy_options.kaia_network is defined else 1) }}"
   BOOTNODES:
   AUTO_RESTART_NODE: 1
   AUTO_RESTART_INTERVAL: 0.1

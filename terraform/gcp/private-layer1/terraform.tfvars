@@ -36,13 +36,21 @@ en_options = {
   boot_disk_size = 30
   # compute_disk_size = 100
   # options = {
-  #   0:{
+  #   0: {
+  #     NETWORK = "kairos"
+  #     NO_DISCOVER = 0
+  #     RPC_ENABLE = 1
+  #     RPC_API = "kaia,admin,personal,eth,web3,net,governance,istanbul"
   #     compute_disk_size = 1000
   #     snapshot_id = "chaindata-full-kairos-20241231"
   #   }
-  #   1:{
+  #   1: {
+  #     NETWORK = "mainnet"
+  #     NO_DISCOVER = 0
+  #     RPC_ENABLE = 1
+  #     RPC_API = "kaia,admin,personal,eth,web3,net,governance,istanbul"
   #     compute_disk_size = 1000
-  #     snapshot_id = "chaindata-full-kairos-20241231"
+  #     snapshot_id = "chaindata-full-mainnet-20241231"
   #   }
   # }
 }
