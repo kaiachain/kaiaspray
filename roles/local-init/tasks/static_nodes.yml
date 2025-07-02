@@ -9,6 +9,7 @@
   register: topology_result
   when:
   - ctx.num_cn > 0 or ctx.num_pn > 0 or ctx.num_en > 0
+  - kaia_network is not defined or kaia_network == ""
 
 - name: Get KNIs data for static-nodes.json
   kaia_static_nodes:
@@ -18,6 +19,7 @@
   register: static_nodes_result
   when:
   - ctx.num_cn > 0 or ctx.num_pn > 0 or ctx.num_en > 0
+  - kaia_network is not defined or kaia_network == ""
 
 - name: Generate static-nodes.json
   copy:
@@ -26,3 +28,4 @@
   with_dict: "{{ static_nodes_result['static_nodes'] }}"
   when:
   - ctx.num_cn > 0 or ctx.num_pn > 0 or ctx.num_en > 0
+  - kaia_network is not defined or kaia_network == ""

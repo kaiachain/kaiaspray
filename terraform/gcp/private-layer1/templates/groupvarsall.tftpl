@@ -4,10 +4,16 @@
 # Kaia installation mode
 kaia_install_mode: "${kaia_install_mode}"
 
+%{ if kaia_version != "" ~}
 kaia_version: ${kaia_version}
+%{ endif ~}
 
 # Docker build settings
 kaia_build_docker_base_image: ${kaia_build_docker_base_image}
+
+# Git build settings
+kaia_build_remote_git_url: ${kaia_build_remote_git_url}
+kaia_build_remote_git_branch: ${kaia_build_remote_git_branch}
 
 # Node counts
 kaia_num_cn: ${kaia_num_cn}
@@ -15,5 +21,12 @@ kaia_num_pn: ${kaia_num_pn}
 kaia_num_en: ${kaia_num_en}
 
 # Network configuration
+kaia_network: ${kaia_network}
 kaia_network_id: ${kaia_network_id}
 kaia_chain_id: ${kaia_chain_id}
+
+# Node-specific options
+cn_options: ${cn_options}
+pn_options: ${pn_options}
+en_options: ${en_options}
+deploy_options: ${deploy_options}
