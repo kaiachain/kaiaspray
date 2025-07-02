@@ -5,7 +5,7 @@
   register: check_nodekey_file
   when:
   - ctx.num > 0
-  - kaia_network is not defined or kaia_network == ""
+  - kaia_network is not defined or kaia_network is none or kaia_network == ""
 
 - name: "Generate {{ ctx.type }} data & genesis.json by Homi"
   shell: |
@@ -14,7 +14,7 @@
   - localhost
   when:
   - ctx.num > 0
-  - kaia_network is not defined or kaia_network == ""
+  - kaia_network is not defined or kaia_network is none or kaia_network == ""
   - check_nodekey_file.stat.exists == False
 
 - name: Convert and get validator data
@@ -31,7 +31,7 @@
     index_var: node_index
   when:
   - ctx.num > 0
-  - kaia_network is not defined or kaia_network == ""
+  - kaia_network is not defined or kaia_network is none or kaia_network == ""
 
 - name: Generate validator file
   copy:
@@ -42,4 +42,4 @@
     index_var: node_index
   when:
   - ctx.num > 0
-  - kaia_network is not defined or kaia_network == ""
+  - kaia_network is not defined or kaia_network is none or kaia_network == ""
