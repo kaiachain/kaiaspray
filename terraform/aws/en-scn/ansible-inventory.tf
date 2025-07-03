@@ -12,7 +12,11 @@ locals {
     {
       homi_output_dir = var.deploy_options.homi_output_dir
       kaia_rewardbase = var.deploy_options.kaia_rewardbase
+      kaia_install_mode = var.deploy_options.kaia_install_mode
       kaia_version = var.deploy_options.kaia_version
+      kaia_build_docker_base_image = var.deploy_options.kaia_build_docker_base_image
+      kaia_build_remote_git_url = var.deploy_options.kaia_build_remote_git_url
+      kaia_build_remote_git_branch = var.deploy_options.kaia_build_remote_git_branch
     }
   )
   ansible_vars_en = templatefile(

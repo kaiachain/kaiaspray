@@ -1,4 +1,18 @@
 homi_output_dir: ${homi_output_dir}
 
 kaia_rewardbase: "${kaia_rewardbase}"
+
+# Installation mode: 'build' or 'package'
+# - build: Build from source code
+# - package: Install from package repository
+# Kaia installation mode
+kaia_install_mode: "${kaia_install_mode}"
+
 kaia_version: "${kaia_version}"
+
+# Docker build settings
+kaia_build_docker_base_image: ${kaia_build_docker_base_image}
+
+# Git build settings
+kaia_build_remote_git_url: ${kaia_build_remote_git_url}
+kaia_build_remote_git_branch: ${kaia_build_remote_git_branch}

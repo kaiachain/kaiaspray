@@ -15,6 +15,8 @@ locals {
       kaia_install_mode = var.deploy_options.kaia_install_mode
       kaia_version      = var.deploy_options.kaia_version
       kaia_build_docker_base_image = var.deploy_options.kaia_build_docker_base_image
+      kaia_build_remote_git_url = var.deploy_options.kaia_build_remote_git_url
+      kaia_build_remote_git_branch = var.deploy_options.kaia_build_remote_git_branch
       kaia_num_cn       = var.cn_options.count
       kaia_num_pn       = var.pn_options.count
       kaia_num_en       = var.en_options.count

@@ -8,6 +8,8 @@ deploy_options = {
   kaia_build_docker_base_image = "kaiachain/build_base:latest"
   kaia_network_id = 9999
   kaia_chain_id   = 9999
+  kaia_build_remote_git_url = "git@github.com:kaiachain/kaia.git"
+  kaia_build_remote_git_branch = "dev"
 }
 
 cn_options = {

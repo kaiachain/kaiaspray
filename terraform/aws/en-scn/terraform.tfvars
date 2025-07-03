@@ -4,7 +4,11 @@ ssh_client_ips = ["0.0.0.0/0"]
 deploy_options = {
   homi_output_dir = "/opt/homi"
   kaia_rewardbase = "0x46879cdc21832d6bd6b49081513fa3d965443075"
+  kaia_install_mode = "build"
   kaia_version = "v1.0.3"
+  kaia_build_docker_base_image = "kaiachain/build_base:latest"
+  kaia_build_remote_git_url = "git@github.com:kaiachain/kaia.git"
+  kaia_build_remote_git_branch = "dev"
   
   # EN options
   kaia_chaindata_timestamp = "latest"
