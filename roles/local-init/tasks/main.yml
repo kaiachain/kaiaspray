@@ -23,7 +23,16 @@
   - localhost
   when:
   - ansible_system == "Linux"
+  - kaia_install_mode == "package"
 
+- name: Build kaia binaries
+  include_role:
+    name: local-build
+  when:
+  - kaia_install_mode == "build"
+  tags:
+  - localhost
+  
 - name: Start to download a package Darwin
   include_tasks: download_package_darwin.yml
   loop:
@@ -35,6 +44,7 @@
   - localhost
   when:
   - ansible_system == "Darwin"
+  - kaia_install_mode == "package"
 
 
 - name: Generate genesis.json & nodekey & validator
@@ -48,6 +58,8 @@
   - { type: "sen", num: "{{ kaia_num_sen }}", network_id: "{{ kaia_service_network_id }}", chain_id: "{{ kaia_service_chain_id }}"  }
   loop_control:
     loop_var: ctx
+  when:
+  - kaia_network is none
   tags:
   - localhost
 
@@ -58,6 +70,8 @@
   - { is_service_chain: True, num_cn: "{{ kaia_num_scn }}", num_pn: "{{ kaia_num_spn }}", num_en: "{{ kaia_num_sen }}" }
   loop_control:
     loop_var: ctx
+  when:
+  - kaia_network is none
   tags:
   - localhost
 

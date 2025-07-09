@@ -14,13 +14,20 @@ locals {
     "${path.module}/templates/groupvarsall.tftpl",
     {
       kaia_install_mode = var.deploy_options.kaia_install_mode
-      kaia_version      = var.deploy_options.kaia_version
+      kaia_version      = try(var.deploy_options.kaia_version, "")
       kaia_build_docker_base_image = var.deploy_options.kaia_build_docker_base_image
+      kaia_build_remote_git_url = try(var.deploy_options.kaia_build_remote_git_url, "git@github.com:kaiachain/kaia.git")
+      kaia_build_remote_git_branch = try(var.deploy_options.kaia_build_remote_git_branch, "dev")
       kaia_num_cn       = var.cn_options.count
       kaia_num_pn       = var.pn_options.count
       kaia_num_en       = var.en_options.count
-      kaia_network_id   = var.deploy_options.kaia_network_id
-      kaia_chain_id     = var.deploy_options.kaia_chain_id
+      kaia_network      = try(var.deploy_options.kaia_network, "")
+      kaia_network_id   = try(var.deploy_options.kaia_network_id, "")
+      kaia_chain_id     = try(var.deploy_options.kaia_chain_id, "")
+      cn_options        = jsonencode(var.cn_options)
+      pn_options        = jsonencode(var.pn_options)
+      en_options        = jsonencode(var.en_options)
+      deploy_options    = jsonencode(var.deploy_options)
     }
   )
 }

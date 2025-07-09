@@ -19,12 +19,17 @@
               else 'pn' if 'pn' in group_names
               else 'en' if 'en' in group_names
               else 'unknown') | trim }}
-    - name: Set configuration override for en node
+    - name: Get node index
       set_fact:
-        kaia_conf_override:
-          RPC_ENABLE: 1
-          RPC_API: admin,debug,kaia,miner,net,personal,rpc,txpool,web3,eth,istanbul,governance
-      when: "'en' in group_names"
+        node_index: "{{ groups[kaia_node_type].index(inventory_hostname) }}"
+    - name: Set configuration override
+      set_fact:
+        kaia_conf_override: "{{ 
+          (cn_options.options[node_index] if 'cn' in group_names and cn_options.options is defined
+           else pn_options.options[node_index] if 'pn' in group_names and pn_options.options is defined
+           else en_options.options[node_index] if 'en' in group_names and en_options.options is defined
+           else {}) | default({})
+        }}"
   roles:
   - { role: kaiaspray-defaults }
   - { role: node-init }

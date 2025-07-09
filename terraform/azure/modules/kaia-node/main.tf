@@ -59,6 +59,7 @@ resource "azurerm_public_ip" "this" {
   resource_group_name = data.azurerm_resource_group.this.name
   location            = data.azurerm_resource_group.this.location
   allocation_method   = "Static"
+  sku                 = "Standard"
 
   tags = merge(var.tags, { Name = var.name })
 }

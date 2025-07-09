@@ -36,6 +36,22 @@
   when:
     - kaia_build_required
 
+- name: Build - Compile homi binary locally
+  ansible.builtin.command: |
+    make homi
+  args:
+    chdir: "{{ kaia_build_dir }}"
+  when:
+    - kaia_build_required
+
+- name: Build - Copy homi binary
+  ansible.builtin.copy:
+    dest: "{{ bin_dir }}/homi"
+    src: "{{ kaia_build_dir }}/build/bin/homi"
+    mode: preserve
+  when:
+    - kaia_build_required
+
 - name: Build - Copy kaia binary files
   ansible.builtin.copy:
     dest: "{{ bin_dir }}"

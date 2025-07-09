@@ -18,6 +18,9 @@ deploy_options = {
   kaia_install_mode = "package"
   kaia_version = "v1.0.3"
   kaia_build_docker_base_image = "kaiachain/build_base:latest"
+  #kaia_build_remote_git_url = "git@github.com:kaiachain/kaia.git"
+  #kaia_build_remote_git_branch = "dev"
+  #kaia_network = "kairos"
   kaia_network_id = 9999
   kaia_chain_id   = 9999
 }
@@ -26,7 +29,7 @@ cn_options = {
   count          = 1
   machine_type   = "n2-standard-2"
   boot_disk_size = 30
-  # compute_disk_size = 100
+  # compute_disk_size = 100 # if you set compute_disk_size, it will be protected if you delete MANUALLY. So, be aware of this, and please run "destroy" command when you want to delete the node.
 }
 
 pn_options = {
@@ -42,13 +45,21 @@ en_options = {
   boot_disk_size = 30
   # compute_disk_size = 100
   # options = {
-  #   0:{
+  #   0: {
+  #     NETWORK = "kairos"
+  #     NO_DISCOVER = 0
+  #     RPC_ENABLE = 1
+  #     RPC_API = "kaia,admin,personal,eth,web3,net,governance,istanbul"
   #     compute_disk_size = 1000
   #     snapshot_id = "chaindata-full-kairos-20241231"
   #   }
-  #   1:{
+  #   1: {
+  #     NETWORK = "mainnet"
+  #     NO_DISCOVER = 0
+  #     RPC_ENABLE = 1
+  #     RPC_API = "kaia,admin,personal,eth,web3,net,governance,istanbul"
   #     compute_disk_size = 1000
-  #     snapshot_id = "chaindata-full-kairos-20241231"
+  #     snapshot_id = "chaindata-full-mainnet-20241231"
   #   }
   # }
 }
