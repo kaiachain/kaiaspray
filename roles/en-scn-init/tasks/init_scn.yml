@@ -29,7 +29,7 @@
 
 - name: "Generate SCN data & genesis.json by Homi"
   become: yes
-  command: homi setup --gen-type local {{ homi_default_options }} --test-num {{ homi_test_account_num }} --cn-num {{ groups.scn|length }} --chainID {{ kaia_service_chain_id }} --network-id {{ kaia_service_network_id }} --p2p-port {{ kaia_conf.PORT }} -o {{ homi_results_dir }}
+  command: homi setup --gen-type local {{ homi_default_options }} {{ homi_extra_options }} --test-num {{ homi_test_account_num }} --cn-num {{ groups.scn|length }} --chainID {{ kaia_service_chain_id }} --network-id {{ kaia_service_network_id }} --p2p-port {{ kaia_conf.PORT }} -o {{ homi_results_dir }}
   when: 
     - not check_nodekey_file.stat.exists
     - '"bridge" in group_names'

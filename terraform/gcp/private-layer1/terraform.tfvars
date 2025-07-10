@@ -20,6 +20,7 @@ deploy_options = {
   kaia_build_docker_base_image = "kaiachain/build_base:latest"
   kaia_network_id = 9999
   kaia_chain_id   = 9999
+  # homi_extra_options = ""
 }
 
 cn_options = {
