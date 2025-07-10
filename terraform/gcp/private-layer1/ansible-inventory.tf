@@ -21,6 +21,7 @@ locals {
       kaia_num_en       = var.en_options.count
       kaia_network_id   = var.deploy_options.kaia_network_id
       kaia_chain_id     = var.deploy_options.kaia_chain_id
+      homi_extra_options = try(var.deploy_options.homi_extra_options, "")
     }
   )
 }
