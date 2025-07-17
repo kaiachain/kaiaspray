@@ -23,6 +23,7 @@ deploy_options = {
   #kaia_network = "kairos"
   kaia_network_id = 9999
   kaia_chain_id   = 9999
+  # homi_extra_options = ""
 }
 
 cn_options = {

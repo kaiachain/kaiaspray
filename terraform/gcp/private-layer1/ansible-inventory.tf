@@ -24,6 +24,7 @@ locals {
       kaia_network      = try(var.deploy_options.kaia_network, "")
       kaia_network_id   = try(var.deploy_options.kaia_network_id, "")
       kaia_chain_id     = try(var.deploy_options.kaia_chain_id, "")
+      homi_extra_options = try(var.deploy_options.homi_extra_options, "")
       cn_options        = jsonencode(var.cn_options)
       pn_options        = jsonencode(var.pn_options)
       en_options        = jsonencode(var.en_options)
