@@ -159,6 +159,27 @@ configurePrometheus()
     done
 }
 
+overrideAdditionalConfig()
+{
+    NODE_TYPE=$1
+    NUM_OF_NODE=$2
+
+    echo "Checking for override ADDITIONAL configuration for ${NODE_TYPE}: ${NUM_OF_NODE} nodes"
+    for ((num = 1; num <= NUM_OF_NODE; num++))
+    do
+      CONF_DIR=$HOMEDIR"/${NODE_TYPE}${num}/conf/k${NODE_TYPE}d.conf"
+      OVERRIDE_VAR="OVERRIDE_CONF_ADDITIONAL_$(echo $NODE_TYPE | tr '[:lower:]' '[:upper:]')_${num}"
+      
+      # Check if override variable is defined and not empty
+      if [[ -n "${!OVERRIDE_VAR}" ]]; then
+        echo "Applying override ADDITIONAL configuration for ${NODE_TYPE}${num}: ${!OVERRIDE_VAR}"
+        # Append the override configuration to existing ADDITIONAL
+        sed -i.bak -E "s|^(ADDITIONAL=.*)\"|\1 ${!OVERRIDE_VAR}\"|" $CONF_DIR
+        rm "$CONF_DIR"".bak"
+      fi
+    done
+}
+
 deploy()
 {
   rm -rf cn* pn* en* homi-output homi
@@ -182,13 +203,19 @@ deploy()
   if [[ $HOMI_REGISTRY_MOCK == true ]]; then
     REGISTRY_MOCK="--registry-mock "
   fi
+  if [[ $HOMI_BAOBAB_TEST == true ]]; then
+    HOMI_CONFIG="--baobab-test "
+  else
+    HOMI_CONFIG="--cypress-test "
+  fi
+  
 
-  ./homi setup --gen-type=local --cypress-test $PATCHADDRESSBOOK $REGISTRY_MOCK \
+  ./homi setup --gen-type=local $HOMI_CONFIG $PATCHADDRESSBOOK $REGISTRY_MOCK $HOMI_ADDITIONAL_OPTIONS \
       --cn-num $NUMOFCN --pn-num $NUMOFPN --en-num $NUMOFEN --chainID $NETWORK_ID \
       --test-num $((NUMOFTESTACCSPERNODE*(NUMOFCN+NUMOFPN+NUMOFEN))) --mnemonic test,junk
 
   if [[ $HOMI_NUMOF_INITIAL_CN_NUM != 0 ]]; then
-    ./homi setup --gen-type=local --baobab-test $NODEKEYSDIR $PATCHADDRESSBOOK $REGISTRY_MOCK \
+    ./homi setup --gen-type=local $HOMI_CONFIG $NODEKEYSDIR $PATCHADDRESSBOOK $REGISTRY_MOCK $HOMI_ADDITIONAL_OPTIONS \
         --cn-num $HOMI_NUMOF_INITIAL_CN_NUM --chainID $NETWORK_ID --output homi-output-tmp
     mv homi-output-tmp/scripts/genesis.json homi-output/scripts/genesis.json
     mv homi-output-tmp/keys/*1 homi-output/keys/
@@ -215,6 +242,11 @@ deploy()
   configurePrometheus "cn" $NUMOFCN 0
   configurePrometheus "pn" $NUMOFPN $NUMOFCN
   configurePrometheus "en" $NUMOFEN $NUMOFCN+$NUMOFPN
+
+  # override additional config
+  overrideAdditionalConfig "cn" $NUMOFCN
+  overrideAdditionalConfig "pn" $NUMOFPN
+  overrideAdditionalConfig "en" $NUMOFEN
 }
 
 # Execute deploy
