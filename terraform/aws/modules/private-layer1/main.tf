@@ -7,7 +7,7 @@ module "cn" {
   ami_id             = var.ami_id
   instance_type      = local.cn_options.instance_type
   key_name           = var.key_name
-  security_group_ids = [aws_security_group.layer1.id]
+  security_group_id = var.security_group_id != null && var.security_group_id != "" ? var.security_group_id : aws_security_group.layer1[0].id
   subnet_id          = var.subnet_ids[count.index % length(var.subnet_ids)]
 
   root_block_device = {
@@ -27,7 +27,7 @@ module "pn" {
   ami_id             = var.ami_id
   instance_type      = local.pn_options.instance_type
   key_name           = var.key_name
-  security_group_ids = [aws_security_group.layer1.id]
+  security_group_id = var.security_group_id != null && var.security_group_id != "" ? var.security_group_id : aws_security_group.layer1[0].id
   subnet_id          = var.subnet_ids[count.index % length(var.subnet_ids)]
 
   root_block_device = {
@@ -47,7 +47,7 @@ module "en" {
   ami_id             = var.ami_id
   instance_type      = local.en_options.instance_type
   key_name           = var.key_name
-  security_group_ids = [aws_security_group.layer1.id]
+  security_group_id = var.security_group_id != null && var.security_group_id != "" ? var.security_group_id : aws_security_group.layer1[0].id
   subnet_id          = var.subnet_ids[count.index % length(var.subnet_ids)]
 
   root_block_device = {
@@ -65,7 +65,7 @@ module "monitor" {
   ami_id             = var.ami_id
   instance_type      = local.monitor_options.instance_type
   key_name           = var.key_name
-  security_group_ids = [aws_security_group.monitor.id]
+  security_group_id = var.security_group_id != null && var.security_group_id != "" ? var.security_group_id : aws_security_group.layer1[0].id
   subnet_id          = var.subnet_ids[0]
 
   root_block_device = {

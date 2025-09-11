@@ -18,9 +18,9 @@ variable "key_name" {
   description = "A key pair is used to control login access to instance"
 }
 
-variable "security_group_ids" {
-  type        = list(string)
-  description = "Security group Ids to attach to instance"
+variable "security_group_id" {
+  type        = string
+  description = "Security group ID to attach to instance"
 }
 
 variable "subnet_id" {

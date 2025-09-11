@@ -65,3 +65,9 @@ variable "monitor_options" {
   description = "The options to deploy monitor node"
   default     = {}
 }
+
+variable "security_group_id" {
+  type        = string
+  description = "Security group ID to use for the deployment"
+  default     = null
+}

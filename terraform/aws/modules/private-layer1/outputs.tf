@@ -15,9 +15,5 @@ output "monitor" {
 }
 
 output "layer1_sg_id" {
-  value = aws_security_group.layer1.id
-}
-
-output "monitor_sg_id" {
-  value = aws_security_group.monitor.id
+  value = var.security_group_id != null ? var.security_group_id : aws_security_group.layer1[0].id
 }

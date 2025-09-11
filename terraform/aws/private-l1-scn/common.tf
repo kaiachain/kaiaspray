@@ -20,7 +20,7 @@ resource "aws_security_group" "layer2" {
       { protocol = "udp", from_port = 32323, to_port = 32323, cidr_blocks = ["0.0.0.0/0"] },
       { protocol = "tcp", from_port = 32323, to_port = 32324, self = true },
       { protocol = "udp", from_port = 32323, to_port = 32323, self = true },
-      { protocol = "tcp", from_port = 61001, to_port = 61001, security_groups = [module.layer1.monitor_sg_id] },
+      { protocol = "tcp", from_port = 61001, to_port = 61001, security_groups = [module.layer1.layer1_sg_id] },
     ]
 
     content {

@@ -1,10 +1,13 @@
-# Installation mode: 'build' or 'package'
-# - build: Build from source code
+# Installation mode: 'build' or 'package' or 'build_remote'
+# - build: Build from source code locally
 # - package: Install from package repository
+# - build_remote: Build from source code on remote host
 # Kaia installation mode
 kaia_install_mode: "${kaia_install_mode}"
 
+%{ if kaia_version != "" ~}
 kaia_version: ${kaia_version}
+%{ endif ~}
 
 # Docker build settings
 kaia_build_docker_base_image: ${kaia_build_docker_base_image}
@@ -15,5 +18,20 @@ kaia_num_pn: ${kaia_num_pn}
 kaia_num_en: ${kaia_num_en}
 
 # Network configuration
+kaia_network: ${kaia_network}
 kaia_network_id: ${kaia_network_id}
 kaia_chain_id: ${kaia_chain_id}
+
+# Node-specific options
+cn_options: ${cn_options}
+pn_options: ${pn_options}
+en_options: ${en_options}
+deploy_options: ${deploy_options}
+
+# Homi extra options per node type
+homi_extra_options_cn: "${homi_extra_options_cn}"
+homi_extra_options_pn: "${homi_extra_options_pn}"
+homi_extra_options_en: "${homi_extra_options_en}"
+homi_extra_options_scn: "${homi_extra_options_scn}"
+homi_extra_options_spn: "${homi_extra_options_spn}"
+homi_extra_options_sen: "${homi_extra_options_sen}"

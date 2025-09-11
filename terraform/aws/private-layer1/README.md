@@ -44,8 +44,7 @@ layer1 = {
     "private_ip" = "<private-ip>"
     "public_ip" = "<public-ip>"
   }
-  layer1_sg_id  = "<security-group-id>"
-  monitor_sg_id = "<security-group-id>"
+  layer1_sg_id = "<security-group-id>"
 }
 ```
 

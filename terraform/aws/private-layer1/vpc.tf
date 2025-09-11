@@ -1,4 +1,6 @@
 module "vpc" {
+  count = var.vpc_id == null ? 1 : 0
+  
   source = "terraform-aws-modules/vpc/aws"
 
   name               = local.name

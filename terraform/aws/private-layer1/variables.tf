@@ -68,3 +68,39 @@ variable "monitor_options" {
   description = "The options to deploy monitor node"
   default     = {}
 }
+
+variable "ssh_existing_private_key_path" {
+  type        = string
+  description = "Path where the private key is saved. It is only used when create_gcp_key_pair is false."
+  default     = ""
+}
+
+variable "ssh_existing_public_key_path" {
+  type        = string
+  description = "Path where the public key is saved. It is only used when create_gcp_key_pair is false."
+  default     = ""
+}
+
+variable "vpc_id" {
+  type        = string
+  description = "VPC ID to use for the deployment"
+  default     = null
+}
+
+variable "subnet_ids" {
+  type        = list(string)
+  description = "List of subnet IDs to use for the deployment"
+  default     = []
+}
+
+variable "security_group_id" {
+  type        = string
+  description = "Security group ID to use for the deployment"
+  default     = null
+}
+
+variable "ssh_private_key_path" {
+  type        = string
+  description = "Path where the SSH private key will be saved"
+  default     = "../../../aws-private-ssh-key.pem"
+}

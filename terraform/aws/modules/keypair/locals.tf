@@ -6,9 +6,8 @@ locals {
       ManagedBy = "terraform"
     }
   )
+  
+  # Extract key name from existing private key path
+  existing_key_name = var.create_aws_key_pair ? var.name : replace(basename(var.ssh_existing_private_key_path), ".pem", "")
 }
 
-data "aws_key_pair" "this" {
-  count    = var.create_aws_key_pair == false ? 1 : 0
-  key_name = var.name
-}

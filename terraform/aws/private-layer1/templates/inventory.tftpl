@@ -1,20 +1,20 @@
 [cn]
 %{ for k, v in cn ~}
-cn${k+1} ansible_host=${v.public_ip} ansible_private_host=${v.private_ip} ansible_ssh_user=ec2-user ansible_ssh_private_key_file=${ basename(ansible_ssh_private_key_file) }
+cn${k+1} ansible_host=${v.public_ip} ansible_private_host=${v.private_ip} ansible_ssh_user=ec2-user ansible_ssh_private_key_file=${ansible_ssh_private_key_file}
 %{ endfor ~}
 
 [pn]
 %{ for k, v in pn ~}
-pn${k+1} ansible_host=${v.public_ip} ansible_private_host=${v.private_ip} ansible_ssh_user=ec2-user ansible_ssh_private_key_file=${ basename(ansible_ssh_private_key_file) }
+pn${k+1} ansible_host=${v.public_ip} ansible_private_host=${v.private_ip} ansible_ssh_user=ec2-user ansible_ssh_private_key_file=${ansible_ssh_private_key_file}
 %{ endfor ~}
 
 [en]
 %{ for k, v in en ~}
-en${k+1} ansible_host=${v.public_ip} ansible_private_host=${v.private_ip} ansible_ssh_user=ec2-user ansible_ssh_private_key_file=${ basename(ansible_ssh_private_key_file) }
+en${k+1} ansible_host=${v.public_ip} ansible_private_host=${v.private_ip} ansible_ssh_user=ec2-user ansible_ssh_private_key_file=${ansible_ssh_private_key_file}
 %{ endfor ~}
 
 [monitor]
-monitor ansible_host=${monitor.public_ip} ansible_ssh_user=ec2-user ansible_ssh_private_key_file=${ basename(ansible_ssh_private_key_file) }
+monitor ansible_host=${monitor.public_ip} ansible_ssh_user=ec2-user ansible_ssh_private_key_file=${ansible_ssh_private_key_file}
 
 [localhost]
 localhost ansible_host=127.0.0.1 ansible_connection=local

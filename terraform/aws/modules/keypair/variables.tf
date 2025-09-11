@@ -19,3 +19,15 @@ variable "ssh_private_key_path" {
   type        = string
   description = "SSH private key path to save"
 }
+
+variable "ssh_existing_private_key_path" {
+  type        = string
+  description = "Path where the private key is saved. It is only used when create_gcp_key_pair is false"
+  default     = ""
+}
+
+variable "ssh_existing_public_key_path" {
+  type        = string
+  description = "Path where the public key is saved. It is only used when create_gcp_key_pair is false"
+  default     = ""
+}
