@@ -29,8 +29,6 @@
     dest: "{{ kaia_conf.DATA_DIR }}/static-nodes.json"
   when: kaia_network is none
 
-
-
 - name: "Initialization - Copy main-gridge.json"
   become: yes
   copy:
@@ -47,31 +45,62 @@
     dest: "{{ kaia_conf.DATA_DIR }}/nodekey"
   when: kaia_network is none
 
-- name: "Initialization - Check genesis initialized"
-  become: yes
+- name: Get checksum of local source of Genesis File
   stat:
-    path: "{{ kaia_conf.DATA_DIR}}/klay"
-  register: check_kaia_data_dir
+    path: "{{ homi_output_dir }}/cn/scripts/genesis.json"
+    checksum_algorithm: sha1
+  register: source_stat
+  delegate_to: localhost
+  when:
+  - is_service_chain == False
+  - kaia_network is none
+
+- name: Get checksum of local source of Genesis File(scn)
+  stat:
+    path: "{{ homi_output_dir }}/scn/scripts/genesis.json"
+    checksum_algorithm: sha1
+  register: source_stat_scn
+  delegate_to: localhost
+  when:
+  - is_service_chain
+  - kaia_network is none
+
+- name: Get checksum of remote destination of Genesis file
+  stat:
+    path: "/etc/{{ kaia_daemon_name }}/genesis.json"
+    checksum_algorithm: sha1
+  register: dest_stat
+  ignore_errors: true
 
 - name: "Initialization - Copy Genesis File"
   become: yes
   copy:
     src: "{{ homi_output_dir }}/cn/scripts/genesis.json"
     dest: "/etc/{{ kaia_daemon_name }}/genesis.json"
+  register: copy_genesis_file_result
   when:
-  - check_kaia_data_dir.stat.exists == False
   - is_service_chain == False
   - kaia_network is none
+  - dest_stat.stat is not defined or source_stat.stat.checksum != dest_stat.stat.checksum
 
-- name: "Initialization - Copy Genesis File"
+- name: "Initialization - Copy Genesis File(scn)"
   become: yes
   copy:
     src: "{{ homi_output_dir }}/scn/scripts/genesis.json"
     dest: "/etc/{{ kaia_daemon_name }}/genesis.json"
+  register: copy_genesis_file_result_scn
   when:
-  - check_kaia_data_dir.stat.exists == False
   - is_service_chain
   - kaia_network is none
+  - dest_stat.stat is not defined or source_stat_scn.stat.checksum != dest_stat.stat.checksum
+
+- name: "Initialization - Init Kaia"
+  become: yes
+  shell:
+    cmd: "rm -rf /var/k{{ kaia_node_type }}d/data/klay && rm -rf /var/k{{ kaia_node_type }}d/logs && mkdir -p /var/k{{ kaia_node_type }}d/logs"
+  when:
+  - kaia_network is none
+  - copy_genesis_file_result is changed or copy_genesis_file_result_scn is changed
 
 - name: "Initialization - Genensis"
   become: yes
@@ -79,5 +108,4 @@
     cmd: "k{{ kaia_node_type }} init --datadir {{ kaia_conf.DATA_DIR }} /etc/{{ kaia_daemon_name }}/genesis.json"
   when:
   - kaia_network is none
-  - check_kaia_data_dir.stat.exists == False
-
+  - copy_genesis_file_result is changed or copy_genesis_file_result_scn is changed
