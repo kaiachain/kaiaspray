@@ -182,14 +182,95 @@ overrideAdditionalConfig()
     done
 }
 
+configurePermissionless()
+{
+  local homi_binary=$1
+  local mode=${PERMISSIONLESS_MODE:-off}
+  PERMISSIONLESS_OPTS=()
+
+  case "$mode" in
+    off)
+      if [[ ${HOMI_PUBLIC_DELEGATION:-false} == true ]]; then
+        echo "FAILED: HOMI_PUBLIC_DELEGATION requires PERMISSIONLESS_MODE=genesis"
+        exit 1
+      fi
+      return
+      ;;
+    genesis)
+      # AddressBookV2 is installed at 0x400 from the genesis block.
+      PERMISSIONLESS_OPTS+=(--permissionless-compatible-blocknumber 0)
+      if [[ ${HOMI_PATCH_ADDRESSBOOK:-false} == true ]]; then
+        echo "WARNING: HOMI_PATCH_ADDRESSBOOK has no effect when PERMISSIONLESS_MODE=genesis."
+        echo "         AddressBookV2 overwrites 0x400 in the genesis alloc, discarding the patch."
+      fi
+      ;;
+    deferred)
+      # AddressBookV1 stays at 0x400 until the fork. Permissionless contracts
+      # are deliberately NOT allocated in genesis: gov setup 01 deploys the
+      # real V4/PDV2 infrastructure, migrates stake, and registers the final
+      # ABv2DataContract through ordinary transactions before the fork.
+      if [[ ! ${HOMI_PERMISSIONLESS_BLOCK:-} =~ ^[1-9][0-9]*$ ]]; then
+        echo "FAILED: PERMISSIONLESS_MODE=deferred requires a positive integer HOMI_PERMISSIONLESS_BLOCK"
+        exit 1
+      fi
+      if [[ ${HOMI_PATCH_ADDRESSBOOK:-false} != true ]]; then
+        echo "FAILED: PERMISSIONLESS_MODE=deferred requires HOMI_PATCH_ADDRESSBOOK=true"
+        echo "        Without the patch nobody can administer AddressBookV1 before the fork."
+        exit 1
+      fi
+      PERMISSIONLESS_OPTS+=(--permissionless-compatible-blocknumber "$HOMI_PERMISSIONLESS_BLOCK")
+      ;;
+    *)
+      echo "FAILED: unknown PERMISSIONLESS_MODE '$mode' (expected: off|genesis|deferred)"
+      exit 1
+      ;;
+  esac
+
+  if [[ -n ${HOMI_VRANK_EPOCH:-} ]]; then
+    if [[ ! $HOMI_VRANK_EPOCH =~ ^[1-9][0-9]*$ ]]; then
+      echo "FAILED: HOMI_VRANK_EPOCH must be a positive integer"
+      exit 1
+    fi
+    PERMISSIONLESS_OPTS+=(--vrank-epoch "$HOMI_VRANK_EPOCH")
+  fi
+
+  if [[ ${HOMI_PUBLIC_DELEGATION:-false} == true ]]; then
+    if [[ $mode != genesis ]]; then
+      echo "FAILED: HOMI_PUBLIC_DELEGATION is only valid with PERMISSIONLESS_MODE=genesis."
+      echo "        Deferred migration deploys V4 and PublicDelegationV2 through 11_govsetup.sh 01."
+      exit 1
+    fi
+    if ! "$homi_binary" setup --help 2>&1 | grep -q -- "--public-delegation"; then
+      echo "FAILED: this homi binary does not support --public-delegation."
+      echo "        It needs kaia PR #1038; rebuild homi from a source tree that includes it."
+      exit 1
+    fi
+    PERMISSIONLESS_OPTS+=(--public-delegation)
+  fi
+
+  printf 'permissionless: mode=%s opts=' "$mode"
+  printf ' %q' "${PERMISSIONLESS_OPTS[@]}"
+  printf '\n'
+}
+
 deploy()
 {
+  local homi_binary="$KAIACODE/build/bin/homi"
+
+  # Validate the binary and permissionless inputs before deleting a deployment.
+  [ -x "$homi_binary" ] || {
+    echo "FAILED: homi binary not found or not executable: $homi_binary"
+    exit 1
+  }
+  configurePermissionless "$homi_binary"
+
   rm -rf cn* pn* en* homi-output homi
-  cp $KAIACODE/build/bin/homi homi
+  cp "$homi_binary" homi
 
   # configure additional homi flags if exists
   NODEKEYSDIR=""
-  PATHADDRESSBOOK=""
+  PATCHADDRESSBOOK=""
+  REGISTRY_MOCK=""
   if [[ $HOMI_CNKEYS == true ]]; then
     NODEKEYSDIR+="--cn-nodekey-dir nodekeydir/cn-keys "
   fi
@@ -212,12 +293,12 @@ deploy()
   fi
   
 
-  ./homi setup --gen-type=local $HOMI_CONFIG $PATCHADDRESSBOOK $REGISTRY_MOCK $HOMI_ADDITIONAL_OPTIONS \
+  ./homi setup --gen-type=local $HOMI_CONFIG $PATCHADDRESSBOOK $REGISTRY_MOCK "${PERMISSIONLESS_OPTS[@]}" $HOMI_ADDITIONAL_OPTIONS \
       --cn-num $NUMOFCN --pn-num $NUMOFPN --en-num $NUMOFEN --chainID $NETWORK_ID \
       --test-num $((NUMOFTESTACCSPERNODE*(NUMOFCN+NUMOFPN+NUMOFEN))) --mnemonic test,junk
 
   if [[ $HOMI_NUMOF_INITIAL_CN_NUM != 0 ]]; then
-    ./homi setup --gen-type=local $HOMI_CONFIG $NODEKEYSDIR $PATCHADDRESSBOOK $REGISTRY_MOCK $HOMI_ADDITIONAL_OPTIONS \
+    ./homi setup --gen-type=local $HOMI_CONFIG $NODEKEYSDIR $PATCHADDRESSBOOK $REGISTRY_MOCK "${PERMISSIONLESS_OPTS[@]}" $HOMI_ADDITIONAL_OPTIONS \
         --cn-num $HOMI_NUMOF_INITIAL_CN_NUM --chainID $NETWORK_ID --output homi-output-tmp
     mv homi-output-tmp/scripts/genesis.json homi-output/scripts/genesis.json
     mv homi-output-tmp/keys/*1 homi-output/keys/
@@ -237,7 +318,7 @@ deploy()
   setupTestAccount "pn" $NUMOFPN NUMOFTESTACCSPERNODE*NUMOFCN
   setupTestAccount "en" $NUMOFEN NUMOFTESTACCSPERNODE*NUMOFCN+NUMOFTESTACCSPERNODE*NUMOFPN
 
-  if [[ $ENFORREMIX = "true" ]]; then
+  if [[ $REMIX == true ]]; then
     configureRemixCors
   fi
 
