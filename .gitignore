@@ -11,6 +11,7 @@ inventory/*/group_vars/all/all.yml
 local-deploy/homi-output
 local-deploy/monitoring
 local-deploy/homi
+local-deploy/gov_setup/logs
 local-deploy/properties.sh
 local-deploy/cn*
 local-deploy/pn*
