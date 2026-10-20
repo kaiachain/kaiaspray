@@ -79,6 +79,7 @@ module "firewall_rules" {
   count = var.create_gcp_firewall_rules == false || length(var.network_tags) > 0 ? 0 : length(local.firewall_rules)
 
   source       = "terraform-google-modules/network/google//modules/firewall-rules"
+  version      = "~> 11.1"
   project_id   = var.project_id
   network_name = var.network
 

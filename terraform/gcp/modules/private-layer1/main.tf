@@ -3,8 +3,8 @@ module "cn" {
 
   source = "../kaia-node"
 
-  name         = format("%s-cn-%d", var.name, count.index + 1)
-  
+  name = format("%s-cn-%d", var.name, count.index + 1)
+
   # Get node settings with index-based overrides
   machine_type = local.get_cn_node_options[count.index].machine_type
 
@@ -13,18 +13,23 @@ module "cn" {
   use_public_ip = true
   region        = var.gcp_region
   network_tier  = var.network_tier
+  nic_type      = local.get_cn_node_options[count.index].nic_type
+  spot          = local.get_cn_node_options[count.index].spot
 
   boot_disk = {
     image_id       = var.boot_image_id
     boot_disk_size = local.get_cn_node_options[count.index].boot_disk_size
+    type           = local.get_cn_node_options[count.index].boot_disk_type
   }
 
   compute_disk = local.get_cn_node_options[count.index].compute_disk_size != null ? {
-    name        = format("%s-cn-%d-disk", var.name, count.index + 1)
-    type        = "pd-ssd"
-    zone        = var.zone_list[count.index % length(var.zone_list)]
-    size        = local.get_cn_node_options[count.index].compute_disk_size
-    snapshot    = local.get_cn_node_options[count.index].snapshot_id
+    name       = format("%s-cn-%d-disk", var.name, count.index + 1)
+    type       = local.get_cn_node_options[count.index].compute_disk_type
+    zone       = var.zone_list[count.index % length(var.zone_list)]
+    size       = local.get_cn_node_options[count.index].compute_disk_size
+    snapshot   = local.get_cn_node_options[count.index].snapshot_id
+    iops       = local.get_cn_node_options[count.index].compute_disk_iops
+    throughput = local.get_cn_node_options[count.index].compute_disk_throughput
   } : null
 
   tags = length(var.network_tags) > 0 ? concat(var.network_tags) : ["kaiaspray", "cn"]
@@ -41,8 +46,8 @@ module "pn" {
 
   source = "../kaia-node"
 
-  name         = format("%s-pn-%d", var.name, count.index + 1)
-  
+  name = format("%s-pn-%d", var.name, count.index + 1)
+
   # Get node settings with index-based overrides
   machine_type = local.get_pn_node_options[count.index].machine_type
 
@@ -51,18 +56,23 @@ module "pn" {
   use_public_ip = true
   region        = var.gcp_region
   network_tier  = var.network_tier
+  nic_type      = local.get_pn_node_options[count.index].nic_type
+  spot          = local.get_pn_node_options[count.index].spot
 
   boot_disk = {
     image_id       = var.boot_image_id
     boot_disk_size = local.get_pn_node_options[count.index].boot_disk_size
+    type           = local.get_pn_node_options[count.index].boot_disk_type
   }
 
   compute_disk = local.get_pn_node_options[count.index].compute_disk_size != null ? {
-    name = format("%s-pn-%d-disk", var.name, count.index + 1)
-    type = "pd-ssd"
-    zone = var.zone_list[count.index % length(var.zone_list)]
-    size = local.get_pn_node_options[count.index].compute_disk_size
-    snapshot = local.get_pn_node_options[count.index].snapshot_id
+    name       = format("%s-pn-%d-disk", var.name, count.index + 1)
+    type       = local.get_pn_node_options[count.index].compute_disk_type
+    zone       = var.zone_list[count.index % length(var.zone_list)]
+    size       = local.get_pn_node_options[count.index].compute_disk_size
+    snapshot   = local.get_pn_node_options[count.index].snapshot_id
+    iops       = local.get_pn_node_options[count.index].compute_disk_iops
+    throughput = local.get_pn_node_options[count.index].compute_disk_throughput
   } : null
 
   tags = length(var.network_tags) > 0 ? concat(var.network_tags) : ["kaiaspray", "pn"]
@@ -79,8 +89,8 @@ module "en" {
 
   source = "../kaia-node"
 
-  name         = format("%s-en-%d", var.name, count.index + 1)
-  
+  name = format("%s-en-%d", var.name, count.index + 1)
+
   # Get node settings with index-based overrides
   machine_type = local.get_en_node_options[count.index].machine_type
 
@@ -89,18 +99,23 @@ module "en" {
   use_public_ip = true
   region        = var.gcp_region
   network_tier  = var.network_tier
+  nic_type      = local.get_en_node_options[count.index].nic_type
+  spot          = local.get_en_node_options[count.index].spot
 
   boot_disk = {
     image_id       = var.boot_image_id
     boot_disk_size = local.get_en_node_options[count.index].boot_disk_size
+    type           = local.get_en_node_options[count.index].boot_disk_type
   }
 
   compute_disk = local.get_en_node_options[count.index].compute_disk_size != null ? {
-    name = format("%s-en-%d-disk", var.name, count.index + 1)
-    type = "pd-ssd"
-    zone = var.zone_list[count.index % length(var.zone_list)]
-    size = local.get_en_node_options[count.index].compute_disk_size
-    snapshot = local.get_en_node_options[count.index].snapshot_id
+    name       = format("%s-en-%d-disk", var.name, count.index + 1)
+    type       = local.get_en_node_options[count.index].compute_disk_type
+    zone       = var.zone_list[count.index % length(var.zone_list)]
+    size       = local.get_en_node_options[count.index].compute_disk_size
+    snapshot   = local.get_en_node_options[count.index].snapshot_id
+    iops       = local.get_en_node_options[count.index].compute_disk_iops
+    throughput = local.get_en_node_options[count.index].compute_disk_throughput
   } : null
 
   tags = length(var.network_tags) > 0 ? concat(var.network_tags) : ["kaiaspray", "en"]
@@ -123,18 +138,23 @@ module "monitor" {
   use_public_ip = true
   region        = var.gcp_region
   network_tier  = var.network_tier
+  nic_type      = local.monitor_options.nic_type
+  spot          = local.monitor_options.spot
 
   boot_disk = {
     image_id       = var.boot_image_id
     boot_disk_size = local.monitor_options.boot_disk_size
+    type           = local.monitor_options.boot_disk_type
   }
 
   compute_disk = try(local.monitor_options.compute_disk_size, null) != null ? {
-    name = format("%s-monitor-disk", var.name)
-    type = "pd-ssd"
-    zone = var.zone_list[0]
-    size = local.monitor_options.compute_disk_size
-    snapshot = try(local.monitor_options.snapshot_id, null)
+    name       = format("%s-monitor-disk", var.name)
+    type       = local.monitor_options.compute_disk_type
+    zone       = var.zone_list[0]
+    size       = local.monitor_options.compute_disk_size
+    snapshot   = try(local.monitor_options.snapshot_id, null)
+    iops       = local.monitor_options.compute_disk_iops
+    throughput = local.monitor_options.compute_disk_throughput
   } : null
 
   tags = length(var.network_tags) > 0 ? var.network_tags : ["kaiaspray", "monitor"]
@@ -156,12 +176,12 @@ resource "null_resource" "cn_disk_mount" {
   depends_on = [var.ssh_key_file_created]
 
   triggers = {
-    instance_id = module.cn[each.key].instance_link
+    instance_id  = module.cn[each.key].instance_link
     ssh_key_file = var.ssh_key_file_created
   }
 
   provisioner "file" {
-    source   = "${path.module}/mount_disk.sh"
+    source      = "${path.module}/mount_disk.sh"
     destination = "/tmp/mount_disk.sh"
 
     connection {
@@ -197,12 +217,12 @@ resource "null_resource" "pn_disk_mount" {
   depends_on = [var.ssh_key_file_created]
 
   triggers = {
-    instance_id = module.pn[each.key].instance_link
+    instance_id  = module.pn[each.key].instance_link
     ssh_key_file = var.ssh_key_file_created
   }
 
   provisioner "file" {
-    source   = "${path.module}/mount_disk.sh"
+    source      = "${path.module}/mount_disk.sh"
     destination = "/tmp/mount_disk.sh"
 
     connection {
@@ -238,12 +258,12 @@ resource "null_resource" "en_disk_mount" {
   depends_on = [var.ssh_key_file_created]
 
   triggers = {
-    instance_id = module.en[each.key].instance_link
+    instance_id  = module.en[each.key].instance_link
     ssh_key_file = var.ssh_key_file_created
   }
 
   provisioner "file" {
-    source   = "${path.module}/mount_disk.sh"
+    source      = "${path.module}/mount_disk.sh"
     destination = "/tmp/mount_disk.sh"
 
     connection {
@@ -276,12 +296,12 @@ resource "null_resource" "monitor_disk_mount" {
   depends_on = [var.ssh_key_file_created]
 
   triggers = {
-    instance_id = module.monitor.instance_link
+    instance_id  = module.monitor.instance_link
     ssh_key_file = var.ssh_key_file_created
   }
 
   provisioner "file" {
-    source   = "${path.module}/mount_disk.sh"
+    source      = "${path.module}/mount_disk.sh"
     destination = "/tmp/mount_disk.sh"
 
     connection {

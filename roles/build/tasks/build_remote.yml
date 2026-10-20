@@ -145,6 +145,8 @@
     src: "~/kaia_build-{{ build_identifiers[item[0]] }}/build/bin/{{ item[1] }}"
     dest: "{{ bin_dir }}-{{ build_identifiers[item[0]] }}/"
     flat: yes
+    # A kaia version may not build every binary (e.g. kpn and kspn after PN was removed)
+    fail_on_missing: false
   loop: "{{ range(0, total_builds | int) | list | product(['kbn', 'kcn', 'kpn', 'ken', 'kscn', 'kspn', 'ksen']) | list }}"
   delegate_to: "{{ remote_build_host }}"
   when:
@@ -156,6 +158,8 @@
     src: "~/kaia_build-{{ build_identifiers[item[0]] }}/build/rpm/etc/init.d/{{ item[1] }}"
     dest: "{{ bin_dir }}-{{ build_identifiers[item[0]] }}/"
     flat: yes
+    # A kaia version may not build every binary (e.g. kpn and kspn after PN was removed)
+    fail_on_missing: false
   loop: "{{ range(0, total_builds | int) | list | product(['kbnd', 'kcnd', 'kpnd', 'kend', 'kscnd', 'kspnd', 'ksend']) | list }}"
   delegate_to: "{{ remote_build_host }}"
   when:
@@ -170,6 +174,7 @@
   when:
     - kaia_build_required
     - not kaia_build_check_file_stats.results[item[0]].stat.exists or not kaia_build_skip_if_exists
+    - (bin_dir ~ '-' ~ build_identifiers[item[0]] ~ '/' ~ item[1]) is file
 
 - name: Build Remote - Set correct permissions for init.d script files
   ansible.builtin.file:
@@ -179,6 +184,7 @@
   when:
     - kaia_build_required
     - not kaia_build_check_file_stats.results[item[0]].stat.exists or not kaia_build_skip_if_exists
+    - (bin_dir ~ '-' ~ build_identifiers[item[0]] ~ '/' ~ item[1]) is file
 
 - name: Build Remote - Git checkout for homi (local)
   ansible.builtin.git:

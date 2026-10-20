@@ -1,6 +1,12 @@
 #!/bin/bash
 source ./properties.sh
 
+# kaia v3 has no PN (no kpn): its ENs connect to the CNs directly
+if [ ! -f $KAIACODE/build/bin/kpn ] && [ "$NUMOFPN" != 0 ]; then
+  echo "No kpn in $KAIACODE/build/bin: running without PNs (the ENs connect to the CNs)"
+  NUMOFPN=0
+fi
+
 modifyNNData()
 {
   NODE_TYPE=$1
@@ -78,10 +84,11 @@ modifyNNData()
       cp homi-output/scripts/static-nodes.json $NODE_TYPE$num/data/static-nodes.json
     elif [ $NODE_TYPE = "en" ]; then
       if [ $NUMOFPN = 0 ]; then
-        echo "FAILED: If you want to run the EN, provide the static-nodes.json at homi-output/scripts_pn/static-nodes.json"
-        return
+        # no PNs: the ENs connect to the CNs
+        cp homi-output/scripts/static-nodes.json $NODE_TYPE$num/data/static-nodes.json
+      else
+        cp homi-output/scripts_pn/static-nodes.json $NODE_TYPE$num/data/static-nodes.json
       fi
-      cp homi-output/scripts_pn/static-nodes.json $NODE_TYPE$num/data/static-nodes.json
     fi
   done
 }
@@ -193,11 +200,15 @@ deploy()
   if [[ $HOMI_CNKEYS == true ]]; then
     NODEKEYSDIR+="--cn-nodekey-dir nodekeydir/cn-keys "
   fi
-  if [[ $HOMI_PNKEYS == true ]]; then
+  if [[ $HOMI_PNKEYS == true ]] && [ $NUMOFPN != 0 ]; then
     NODEKEYSDIR+="--pn-nodekey-dir nodekeydir/pn-keys "
   fi
   if [[ $HOMI_ENKEYS == true ]]; then
     NODEKEYSDIR+="--en-nodekey-dir nodekeydir/en-keys "
+  fi
+  PN_NUM=""  # homi of kaia v3 has no --pn-num
+  if [ $NUMOFPN != 0 ]; then
+    PN_NUM="--pn-num $NUMOFPN"
   fi
   if [[ $HOMI_PATCH_ADDRESSBOOK == true ]]; then
     PATCHADDRESSBOOK="--patch-address-book "
@@ -213,7 +224,7 @@ deploy()
   
 
   ./homi setup --gen-type=local $HOMI_CONFIG $PATCHADDRESSBOOK $REGISTRY_MOCK $HOMI_ADDITIONAL_OPTIONS \
-      --cn-num $NUMOFCN --pn-num $NUMOFPN --en-num $NUMOFEN --chainID $NETWORK_ID \
+      --cn-num $NUMOFCN $PN_NUM --en-num $NUMOFEN --chainID $NETWORK_ID \
       --test-num $((NUMOFTESTACCSPERNODE*(NUMOFCN+NUMOFPN+NUMOFEN))) --mnemonic test,junk
 
   if [[ $HOMI_NUMOF_INITIAL_CN_NUM != 0 ]]; then
@@ -231,7 +242,7 @@ deploy()
   modifyNNData "pn" $NUMOFPN $NUMOFCN
   modifyNNData "en" $NUMOFEN $NUMOFCN+$NUMOFPN
 
-  sh 1_copy_binary.sh
+  bash 1_copy_binary.sh  # a bash script (sh is dash on Debian)
 
   setupTestAccount "cn" $NUMOFCN 0
   setupTestAccount "pn" $NUMOFPN NUMOFTESTACCSPERNODE*NUMOFCN

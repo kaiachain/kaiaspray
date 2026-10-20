@@ -8,6 +8,7 @@ resource "google_compute_instance" "this" {
     initialize_params {
       image = lookup(var.boot_disk, "image_id", data.google_compute_image.this.family)
       size  = lookup(var.boot_disk, "boot_disk_size", 20)
+      type  = lookup(var.boot_disk, "type", null)
     }
   }
 
@@ -30,8 +31,21 @@ resource "google_compute_instance" "this" {
     }
   }
 
+  # Spot: GCP may stop the VM at any time; STOP (not DELETE) keeps its disks so it can be started again
+  dynamic "scheduling" {
+    for_each = var.spot ? [1] : []
+
+    content {
+      provisioning_model          = "SPOT"
+      preemptible                 = true
+      automatic_restart           = false
+      instance_termination_action = "STOP"
+    }
+  }
+
   network_interface {
     subnetwork = var.subnetwork
+    nic_type   = var.nic_type
 
     dynamic "access_config" {
       for_each = var.use_public_ip == true ? [1] : []
@@ -57,6 +71,10 @@ resource "google_compute_disk" "this" {
   zone     = lookup(var.compute_disk, "zone", null)
   size     = lookup(var.compute_disk, "size", null)
   snapshot = lookup(var.compute_disk, "snapshot", null)
+
+  # Hyperdisk only
+  provisioned_iops       = lookup(var.compute_disk, "iops", null)
+  provisioned_throughput = lookup(var.compute_disk, "throughput", null)
 }
 
 resource "google_compute_address" "this" {

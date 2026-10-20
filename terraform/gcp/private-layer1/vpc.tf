@@ -1,7 +1,8 @@
 module "vpc" {
   count = var.network == "" ? 1 : 0 # create vpc only if network is not provided
 
-  source = "terraform-google-modules/network/google"
+  source  = "terraform-google-modules/network/google"
+  version = "~> 11.1" # 18.x rejects this configuration
 
   project_id   = var.project_id
   network_name = local.name

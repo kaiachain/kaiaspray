@@ -78,3 +78,15 @@ variable "service_account" {
   description = "Service account to attach to the instance"
   default     = null
 }
+
+variable "spot" {
+  type        = bool
+  description = "Create a Spot VM, which GCP stops (keeping its disks) when it is preempted"
+  default     = false
+}
+
+variable "nic_type" {
+  type        = string
+  description = "NIC type (GVNIC or VIRTIO_NET); null for the GCP default. Machine series such as C4 and N4 need GVNIC"
+  default     = null
+}
