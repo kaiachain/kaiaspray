@@ -47,6 +47,8 @@ This guide explains how to deploy a local Kaia network.
    NUMOFEN=1
    NUMOFTESTACCSPERNODE=1
    ```
+   Kaia v3 has no PN: when `$KAIACODE/build/bin/kpn` doesn't exist, `NUMOFPN` is treated as 0 and the ENs connect to the CNs directly.
+
    Remix option - Default value is true.
    ```
    REMIX=true # if this is true, set the cors field of the EN to use remix. If EN not available, CN will be used for remix.
