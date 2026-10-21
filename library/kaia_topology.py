@@ -60,6 +60,7 @@ class ModuleRunner(object):
             pn_per_cn = self.num_pn / self.num_cn
         
         pn_per_en = 2
+        cn_per_en = 2  # without PNs (kaia v3 has none), ENs connect to CNs
 
         # full mesh for CNs
         cn_list = [node_name('cn', i) for i in range(self.num_cn)]
@@ -99,6 +100,10 @@ class ModuleRunner(object):
                 for _ in range(pn_per_en):
                     pn_index = (pn_index + int(self.num_pn / pn_per_en)) % self.num_pn
                     topology[en_name].append(node_name('pn', pn_index))
+            elif self.num_pn == 0 and self.num_cn > 0:
+                # cn_per_en CNs per EN, spread over the CNs
+                for j in range(min(cn_per_en, self.num_cn)):
+                    topology[en_name].append(node_name('cn', (i + j) % self.num_cn))
 
         return topology
 
