@@ -73,6 +73,11 @@ This guide explains how to deploy a local Kaia network.
    - `4_ccstop.sh`: Stop the kaia nodes
    - `5_attach.sh`: Attach the kaia node
    - `6_logs.sh`: Tail the log file of the kaia node
+   - `7_monitoring.sh`: Start, stop, or show URLs for Prometheus and Grafana
+   - `8_explorer.sh`: Start or stop the local Blockscout explorer
+   - `9_rolling_update.sh`: Update node binaries one by one with health checks
+   - `10_jsexec.sh`: Execute a JavaScript expression through IPC, RPC, or WebSocket
+   - `11_govsetup.sh`: Run numbered local-governance setup workflows
 
    Run next scripts
    ```bash
@@ -134,6 +139,10 @@ This guide explains how to deploy a local Kaia network.
 ./8_explorer.sh stop
 ./9_rolling_update.sh cn 1 # update one node
 ./9_rolling_update.sh # update all nodes one by one
+./11_govsetup.sh 01              # run the complete permissionless migration
+./11_govsetup.sh 01 --save-log   # run and save console output under gov_setup/logs
+./11_govsetup.sh 01 --verbose    # include tx hashes, gas and per-contract details
+./11_govsetup.sh 01 print        # query legacy/current addresses and deploy blocks
 ```
 
 ## TroubleShooting
