@@ -22,7 +22,7 @@
               else 'unknown') | trim }}
     - name: Get node index
       set_fact:
-        node_index: "{{ groups[kaia_node_type].index(inventory_hostname) }}"
+        node_index: "{{ groups[kaia_node_type].index(inventory_hostname) | string }}"  # the options maps' keys are strings (ansible-core 2.19 keeps an int)
     - name: Set configuration override
       set_fact:
         kaia_conf_override: "{{ 
