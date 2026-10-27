@@ -3,9 +3,7 @@
   gather_facts: True
   roles:
   - { role: kaiaspray-defaults }
-  - { role: local-init }
-  - role: build
-    when: kaia_install_mode == 'build'
+  - { role: local-init }  # includes build (kaia_install_mode build) before homi makes the genesis
   tags:
   - localhost
 
