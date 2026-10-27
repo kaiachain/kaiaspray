@@ -86,6 +86,12 @@ variable "gcp_region" {
   default     = "asia-northeast3"
 }
 
+variable "zones" {
+  type        = list(string)
+  description = "Zones of gcp_region to place the nodes in, in turn; if empty, all of the region's zones (e.g. leave out a zone that has run out of a machine type)"
+  default     = []
+}
+
 variable "network" {
   type        = string
   description = "Network Name to be used"

@@ -2,7 +2,7 @@ module "layer1" {
   source = "../modules/private-layer1"
 
   name       = local.name
-  zone_list  = data.google_compute_zones.this.names
+  zone_list  = length(var.zones) > 0 ? var.zones : data.google_compute_zones.this.names
   network    = local.network_self_link
   subnetwork = local.subnetwork_self_link
   project_id = var.project_id

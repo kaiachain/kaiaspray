@@ -61,6 +61,11 @@ resource "google_compute_instance" "this" {
   metadata = merge(
     var.metadata,
   )
+
+  # A node stays in its zone when the zone list changes (e.g. a zone out of a machine type is left out): only new nodes follow it
+  lifecycle {
+    ignore_changes = [zone]
+  }
 }
 
 resource "google_compute_disk" "this" {
@@ -75,6 +80,10 @@ resource "google_compute_disk" "this" {
   # Hyperdisk only
   provisioned_iops       = lookup(var.compute_disk, "iops", null)
   provisioned_throughput = lookup(var.compute_disk, "throughput", null)
+
+  lifecycle {
+    ignore_changes = [zone] # stays with its node (see google_compute_instance.this)
+  }
 }
 
 resource "google_compute_address" "this" {
