@@ -3,8 +3,3 @@
   include_tasks: build_local.yml
   when:
   - kaia_install_mode == 'build'
-
-- name: "Build binary on remote host"
-  include_tasks: build_remote.yml
-  when:
-  - kaia_install_mode == 'build_remote'

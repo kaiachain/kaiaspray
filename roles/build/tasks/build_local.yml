@@ -1,8 +1,14 @@
 ---
+# Build kaia on this machine (where ansible runs) with docker, statically linked so the binaries run on any node OS;
+# node-init then copies them to the nodes.
+# deploy_options.kaia_build_cache (a gs:// folder, optional): a kaia commit found there (<folder>/<commit>/ with its
+# COMPLETE file) is downloaded instead of built. Something else fills the cache (e.g. kaia-deploy-helper).
+# homi runs on this machine, so it is always built here.
 - name: Set build variables
   set_fact:
     git_url: "{{ deploy_options.kaia_build_remote_git_url | default(kaia_build_remote_git_url) }}"
     git_branch: "{{ deploy_options.kaia_build_remote_git_branch | default(kaia_build_remote_git_branch) }}"
+    build_cache: "{{ deploy_options.kaia_build_cache | default(kaia_build_cache) | regex_replace('/+$', '') }}"
 
 - name: Calculate total builds
   set_fact:
@@ -58,14 +64,36 @@
   when: kaia_build_required[item]
   loop: "{{ range(0, total_builds | int) | list }}"
 
+- name: Build - Look for the commit in the build cache
+  ansible.builtin.command: gcloud storage ls "{{ build_cache }}/{{ git_info.results[item].after }}/COMPLETE"
+  register: kaia_build_cached
+  changed_when: false
+  failed_when: false
+  when: kaia_build_required[item] and build_cache != ''
+  loop: "{{ range(0, total_builds | int) | list }}"
+
+# GCS keeps no file modes, and node-init copies them as they are here
+- name: Build - Download the build from the cache
+  ansible.builtin.shell: >-
+    gcloud storage cp "{{ build_cache }}/{{ git_info.results[item].after }}/*" "{{ bin_dir }}-{{ build_identifiers[item] }}/" &&
+    chmod 755 "{{ bin_dir }}-{{ build_identifiers[item] }}"/k*
+  when: kaia_build_required[item] and kaia_build_cached.results[item].rc | default(1) == 0
+  loop: "{{ range(0, total_builds | int) | list }}"
+
+- name: Build - Compile what the cache didn't have
+  set_fact:
+    kaia_build_compile: >-
+      {{ (kaia_build_compile | default([])) + [kaia_build_required[item] and kaia_build_cached.results[item].rc | default(1) != 0] }}
+  loop: "{{ range(0, total_builds | int) | list }}"
+
 - name: Build - Compile kaia binary
   ansible.builtin.command: |
-    docker build --build-arg KLAYTN_STATIC_LINK=1 --build-arg DOCKER_BASE_IMAGE={{ kaia_build_docker_base_image }} -t {{ kaia_build_docker_builder_image }}-{{ item }} --output output .
+    docker build --build-arg KAIA_STATIC_LINK=1 --build-arg DOCKER_BASE_IMAGE={{ kaia_build_docker_base_image }} -t {{ kaia_build_docker_builder_image }}-{{ item }} --output output .
   args:
     chdir: "{{ kaia_build_dir }}-{{ build_identifiers[item] }}"
   environment:
     DOCKER_BUILDKIT: 1
-  when: kaia_build_required[item]
+  when: kaia_build_compile[item]
   loop: "{{ range(0, total_builds | int) | list }}"
 
 - name: Build - Copy kaia binary files
@@ -73,24 +101,43 @@
     dest: "{{ bin_dir }}-{{ build_identifiers[item[0]] }}"
     src: "{{ kaia_build_dir }}-{{ build_identifiers[item[0]] }}/output/klaytn-docker-pkg/bin/{{ item[1] }}"
     mode: preserve
-  when: kaia_build_required[item[0]]
+  # A kaia version may not build every binary (e.g. kpn and kspn after PN was removed)
+  when:
+    - kaia_build_compile[item[0]]
+    - (kaia_build_dir ~ '-' ~ build_identifiers[item[0]] ~ '/output/klaytn-docker-pkg/bin/' ~ item[1]) is file
   loop: "{{ range(0, total_builds | int) | list | product(['kbn', 'kcn', 'kpn', 'ken', 'kscn', 'kspn', 'ksen']) | list }}"
+
+- name: Build - Copy kaia init.d script files
+  ansible.builtin.copy:
+    dest: "{{ bin_dir }}-{{ build_identifiers[item[0]] }}"
+    src: "{{ kaia_build_dir }}-{{ build_identifiers[item[0]] }}/build/rpm/etc/init.d/{{ item[1] }}"
+    mode: preserve
+  when:
+    - kaia_build_compile[item[0]]
+    - (kaia_build_dir ~ '-' ~ build_identifiers[item[0]] ~ '/build/rpm/etc/init.d/' ~ item[1]) is file
+  loop: "{{ range(0, total_builds | int) | list | product(['kbnd', 'kcnd', 'kpnd', 'kend', 'kscnd', 'kspnd', 'ksend']) | list }}"
 
 # There may be multiple git dirs to build different versions of kaia binaries,
 # however we don't need to use different versions of homi to generate genesis and node keys.
 # So we use the first git dir to build and run homi.
+- name: Build - Check homi binary
+  ansible.builtin.stat:
+    path: "{{ bin_dir }}-{{ build_identifiers[0] }}/homi"
+  register: homi_binary
+
 - name: Build - Compile homi binary locally
   ansible.builtin.command: |
     make homi
   args:
     chdir: "{{ kaia_build_dir }}-{{ build_identifiers[0] }}"
-  when: kaia_build_required[0]
+  when: kaia_build_required[0] or not homi_binary.stat.exists
 
 - name: Build - Copy homi binary
   ansible.builtin.copy:
     dest: "{{ bin_dir }}-{{ build_identifiers[0] }}/homi"
     src: "{{ kaia_build_dir }}-{{ build_identifiers[0] }}/build/bin/homi"
     mode: preserve
+  when: kaia_build_required[0] or not homi_binary.stat.exists
 
 - name: Build - Remove existing bin directory if it exists
   ansible.builtin.file:
@@ -104,14 +151,6 @@
     dest: "{{ bin_dir }}"
     state: link
   when: total_builds | int > 0
-
-- name: Build - Copy kaia init.d script files
-  ansible.builtin.copy:
-    dest: "{{ bin_dir }}-{{ build_identifiers[item[0]] }}"
-    src: "{{ kaia_build_dir }}-{{ build_identifiers[item[0]] }}/build/rpm/etc/init.d/{{ item[1] }}"
-    mode: preserve
-  when: kaia_build_required[item[0]]
-  loop: "{{ range(0, total_builds | int) | list | product(['kbnd', 'kcnd', 'kpnd', 'kend', 'kscnd', 'kspnd', 'ksend']) | list }}"
 
 - name: Build - Creating an empty file for checking
   ansible.builtin.file:

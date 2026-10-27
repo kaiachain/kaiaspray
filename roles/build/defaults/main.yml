@@ -6,3 +6,5 @@ kaia_build_remote_git_branch: "dev"
 kaia_build_check_file_path: "{{ cache_dir }}/kaia_build_check_file"
 kaia_build_skip_if_exists: True
 kaia_build_force_compile: False
+kaia_build_cache: ""  # gs:// folder of builds by kaia commit to download instead of building (optional)
+

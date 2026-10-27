@@ -7,4 +7,4 @@
 - name: "Install binary using build"
   include_tasks: install_build.yml
   when:
-  - kaia_install_mode in ['build', 'build_remote']
+  - kaia_install_mode == 'build'

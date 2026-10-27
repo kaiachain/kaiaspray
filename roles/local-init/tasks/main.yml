@@ -34,7 +34,7 @@
   include_role:
     name: build
   when:
-  - kaia_install_mode in ["build", "build_remote"]
+  - kaia_install_mode == "build"
   tags:
   - localhost
   
